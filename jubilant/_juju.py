@@ -295,6 +295,8 @@ class Juju:
                 after the first argument in *args*.
             stdin: Standard input to send to the process, if any.
         """
+        # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
+        args = args + ("--logging-config=\"juju.rpc=TRACE\"", "--show-log")
         stdout, _ = self._cli(*args, include_model=include_model, stdin=stdin)
         return stdout
 
