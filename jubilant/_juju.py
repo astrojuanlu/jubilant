@@ -297,7 +297,9 @@ class Juju:
         """
         # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
         args = args + ("--logging-config=\"juju.rpc=TRACE\"", "--show-log")
-        stdout, _ = self._cli(*args, include_model=include_model, stdin=stdin)
+        stdout, stderr = self._cli(*args, include_model=include_model, stdin=stdin)
+        logger.debug(stdout)
+        logger.debug(stderr)
         return stdout
 
     def _cli(
