@@ -296,10 +296,8 @@ class Juju:
             stdin: Standard input to send to the process, if any.
         """
         # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
-        args = args + ("--logging-config=\"juju.rpc=TRACE\"", "--show-log")
-        stdout, stderr = self._cli(*args, include_model=include_model, stdin=stdin)
-        logger.debug(stdout)
-        logger.debug(stderr)
+        args = (*args, '--logging-config="juju.rpc=TRACE"', '--show-log')
+        stdout, _ = self._cli(*args, include_model=include_model, stdin=stdin)
         return stdout
 
     def _cli(
@@ -310,16 +308,19 @@ class Juju:
             args = (args[0], '--model', self.model) + args[1:]
         if log:
             logger.info('cli: juju %s', shlex.join(args))
-        try:
-            process = subprocess.run(
-                [self.cli_binary, *args],
-                check=True,
-                capture_output=True,
-                encoding='utf-8',
-                input=stdin,
-            )
-        except subprocess.CalledProcessError as e:
-            raise CLIError(e.returncode, e.cmd, e.stdout, e.stderr) from None
+
+        cmd = [self.cli_binary, *args]
+        process = subprocess.run(
+            cmd,
+            check=False,
+            capture_output=True,
+            encoding='utf-8',
+            input=stdin,
+        )
+        logger.debug(process.stdout)
+        logger.debug(process.stderr)
+        if process.returncode != 0:
+            raise CLIError(process.returncode, cmd, process.stdout, process.stderr) from None
         return (process.stdout, process.stderr)
 
     @overload
