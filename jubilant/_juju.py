@@ -317,8 +317,10 @@ class Juju:
             encoding='utf-8',
             input=stdin,
         )
-        logger.debug(process.stdout)
-        logger.debug(process.stderr)
+        # Log even if log=False for `juju wait`,
+        # see https://github.com/canonical/jubilant/pull/88
+        logger.debug('stdout: %s', process.stdout)
+        logger.debug('stderr: %s', process.stderr)
         if process.returncode != 0:
             raise CLIError(process.returncode, cmd, process.stdout, process.stderr) from None
         return (process.stdout, process.stderr)
