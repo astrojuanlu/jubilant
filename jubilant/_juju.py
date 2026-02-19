@@ -286,7 +286,13 @@ class Juju:
         _, stderr = self._cli(*args, include_model=False)
         logger.info('bootstrap output:\n%s', stderr)
 
-    def cli(self, *args: str, include_model: bool = True, stdin: str | None = None) -> str:
+    def cli(
+        self,
+        *args: str,
+        include_model: bool = True,
+        stdin: str | None = None,
+        trace_rpc: bool = True,
+    ) -> str:
         """Run a Juju CLI command and return its standard output.
 
         Args:
@@ -294,14 +300,20 @@ class Juju:
             include_model: If true and :attr:`model` is set, insert the ``--model`` argument
                 after the first argument in *args*.
             stdin: Standard input to send to the process, if any.
+            trace_rpc: Whether to add TRACE logs to juju.rpc.
         """
-        # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
-        args = (*args, '--logging-config="juju.rpc=TRACE"', '--show-log')
+        if trace_rpc:
+            # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
+            args = (*args, '--logging-config="juju.rpc=TRACE"', '--show-log')
         stdout, _ = self._cli(*args, include_model=include_model, stdin=stdin)
         return stdout
 
     def _cli(
-        self, *args: str, include_model: bool = True, stdin: str | None = None, log: bool = True
+        self,
+        *args: str,
+        include_model: bool = True,
+        stdin: str | None = None,
+        log: bool = True,
     ) -> tuple[str, str]:
         """Run a Juju CLI command and return its standard output and standard error."""
         if include_model and self.model is not None:
@@ -1124,7 +1136,7 @@ class Juju:
         cli_args.append(command)
         cli_args.extend(args)
 
-        return self.cli(*cli_args)
+        return self.cli(*cli_args, trace_rpc=False)
 
     def status(self) -> Status:
         """Fetch the status of the current model, including its applications and units."""
