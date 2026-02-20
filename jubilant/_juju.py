@@ -302,10 +302,7 @@ class Juju:
             stdin: Standard input to send to the process, if any.
             trace_rpc: Whether to add TRACE logs to juju.rpc.
         """
-        if trace_rpc:
-            # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
-            args = (*args, '--logging-config=juju.rpc=TRACE', '--show-log')
-        stdout, _ = self._cli(*args, include_model=include_model, stdin=stdin)
+        stdout, _ = self._cli(*args, include_model=include_model, stdin=stdin, trace_rpc=trace_rpc)
         return stdout
 
     def _cli(
@@ -314,10 +311,14 @@ class Juju:
         include_model: bool = True,
         stdin: str | None = None,
         log: bool = True,
+        trace_rpc: bool = True,
     ) -> tuple[str, str]:
         """Run a Juju CLI command and return its standard output and standard error."""
         if include_model and self.model is not None:
             args = (args[0], '--model', self.model) + args[1:]
+        if trace_rpc:
+            # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
+            args = (*args, '--logging-config=juju.rpc=TRACE', '--show-log')
         if log:
             logger.info('cli: juju %s', shlex.join(args))
 
