@@ -304,7 +304,7 @@ class Juju:
         """
         if trace_rpc:
             # https://github.com/juju/juju/issues/21664#issuecomment-3926142424
-            args = (*args, '--logging-config="juju.rpc=TRACE"', '--show-log')
+            args = (*args, '--logging-config=juju.rpc=TRACE', '--show-log')
         stdout, _ = self._cli(*args, include_model=include_model, stdin=stdin)
         return stdout
 
